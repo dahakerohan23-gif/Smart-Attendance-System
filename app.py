@@ -347,6 +347,8 @@ def get_today_attendance_records():
 @app.route("/dashboard")
 @app.route("/login")
 def dashboard():
+    if not camera_manager.running:
+        camera_manager.start()
     lecture = load_lecture_settings()
     start_time = lecture.get("start_time", "10:00")
     start_before = int(lecture.get("start_before_minutes", 10))
