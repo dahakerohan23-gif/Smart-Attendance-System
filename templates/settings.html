@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card p-4 border-0 shadow-sm mb-4">
+            <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-gear text-primary"></i>
+                <span>System Configuration</span>
+            </h3>
+            <p class="text-muted mb-0">Configure active lecture schedule and camera preferences.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Lecture Settings -->
+            <div class="col-md-6">
+                <div class="card p-4 border-0 shadow-sm h-100">
+                    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history text-primary"></i>
+                        <span>Lecture Schedule</span>
+                    </h5>
+                    <form method="POST" action="{{ url_for('settings_view') }}">
+                        <input type="hidden" name="action" value="save_lecture">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Lecture Name</label>
+                            <input type="text" name="lecture_name" class="form-control" value="{{ lecture.lecture_name }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Start Time (24-Hour HH:MM)</label>
+                            <input type="text" name="start_time" class="form-control" value="{{ lecture.start_time }}" required pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$">
+                            <div class="form-text">Example: <code>10:00</code> or <code>14:30</code></div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Opens Before</label>
+                                <div class="input-group">
+                                    <input type="number" name="start_before_minutes" class="form-control" value="{{ lecture.start_before_minutes }}" min="0" max="60">
+                                    <span class="input-group-text">mins</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Closes After</label>
+                                <div class="input-group">
+                                    <input type="number" name="end_after_minutes" class="form-control" value="{{ lecture.end_after_minutes }}" min="0" max="60">
+                                    <span class="input-group-text">mins</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-light rounded mb-3 small">
+                            Active Monitoring Window: <strong>{{ win_start }} – {{ win_end }}</strong>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-save me-1"></i> Save Lecture Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Camera Source Settings -->
+            <div class="col-md-6">
+                <div class="card p-4 border-0 shadow-sm h-100">
+                    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-camera text-primary"></i>
+                        <span>Camera Hardware Source</span>
+                    </h5>
+                    <form method="POST" action="{{ url_for('settings_view') }}">
+                        <input type="hidden" name="action" value="save_camera">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Camera Source Type</label>
+                            <select name="source_type" class="form-select" id="cam-type-select" onchange="toggleCamInput()">
+                                <option value="webcam" {% if camera_config.source_type == 'webcam' %}selected{% endif %}>Laptop / USB Webcam</option>
+                                <option value="phone" {% if camera_config.source_type == 'phone' %}selected{% endif %}>Mobile Phone Camera (Wi-Fi / IP Webcam)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="webcam-index-group">
+                            <label class="form-label fw-semibold">Camera Device Index</label>
+                            <select name="index" class="form-select">
+                                <option value="0" {% if camera_config.index == 0 %}selected{% endif %}>Camera 0 (Default Laptop Webcam)</option>
+                                <option value="1" {% if camera_config.index == 1 %}selected{% endif %}>Camera 1 (Secondary / HD Webcam)</option>
+                                <option value="2" {% if camera_config.index == 2 %}selected{% endif %}>Camera 2</option>
+                            </select>
+                            <div class="form-text">If Camera 0 is black or unavailable, select Camera 1.</div>
+                        </div>
+
+                        <div class="mb-3 d-none" id="phone-url-group">
+                            <label class="form-label fw-semibold">Phone Camera Stream URL</label>
+                            <input type="text" name="phone_url" class="form-control" placeholder="http://192.168.1.15:8080/video" value="{{ camera_config.phone_url }}">
+                            <div class="form-text">Example: <code>http://192.168.1.5:8080/video</code> (from IP Webcam app)</div>
+                        </div>
+
+                        <div class="alert alert-secondary py-2 small mb-3">
+                            <i class="bi bi-info-circle me-1"></i> Saving applies immediately to the live stream.
+                        </div>
+
+                        <button type="submit" class="btn btn-secondary w-100">
+                            <i class="bi bi-arrow-repeat me-1"></i> Apply Camera Source
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleCamInput() {
+        const type = document.getElementById('cam-type-select').value;
+        const webcamGroup = document.getElementById('webcam-index-group');
+        const phoneGroup = document.getElementById('phone-url-group');
+
+        if (type === 'phone') {
+            webcamGroup.classList.add('d-none');
+            phoneGroup.classList.remove('d-none');
+        } else {
+            webcamGroup.classList.remove('d-none');
+            phoneGroup.classList.add('d-none');
+        }
+    }
+    toggleCamInput();
+</script>
+{% endblock %}
+

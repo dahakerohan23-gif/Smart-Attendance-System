@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Records - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card p-4 border-0 shadow-sm">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                        <i class="bi bi-journal-check text-primary"></i>
+                        <span>Master Attendance Records</span>
+                    </h3>
+                    <p class="text-muted mb-0">Records synced with <code>reports/attendance.xlsx</code></p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('download_excel') }}" class="btn btn-success d-flex align-items-center gap-2">
+                        <i class="bi bi-file-earmark-excel-fill fs-5"></i>
+                        <span>Download Excel Sheet</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0 py-3">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="search-input" class="form-control bg-light border-start-0" placeholder="Search by name, ID, roll, lecture...">
+                </div>
+            </div>
+            <div class="col-md-8 text-md-end text-muted small">
+                Total Records: <strong>{{ records|length }}</strong>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="records-table">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Date</th>
+                        <th>Student ID</th>
+                        <th>Full Name</th>
+                        <th>Roll No</th>
+                        <th>Class</th>
+                        <th>Div</th>
+                        <th>Lecture</th>
+                        <th>Time</th>
+                        <th class="pe-4 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if records %}
+                        {% for r in records %}
+                        <tr>
+                            <td class="ps-4 fw-medium">{{ r.Date }}</td>
+                            <td><code>{{ r['Student ID'] }}</code></td>
+                            <td class="fw-semibold">{{ r.Name }}</td>
+                            <td>{{ r['Roll No'] }}</td>
+                            <td>{{ r.Class }}</td>
+                            <td>{{ r.Division }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ r.Lecture }}</span></td>
+                            <td><small class="text-muted">{{ r.Time }}</small></td>
+                            <td class="pe-4 text-center">
+                                <span class="badge badge-present px-3 py-1">{{ r.Status }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center py-5 text-muted">
+                                <i class="bi bi-folder-x fs-1 d-block mb-2 text-secondary"></i>
+                                No attendance records found yet.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('search-input').addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#records-table tbody tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}
+

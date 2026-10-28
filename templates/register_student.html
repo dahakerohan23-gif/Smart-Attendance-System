@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Register Student - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card p-4 border-0 shadow-sm mb-4">
+            <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-person-plus text-primary"></i>
+                <span>Register New Student</span>
+            </h3>
+            <p class="text-muted mb-0">Fill in the student details and capture facial photos for AI training.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left: Form -->
+            <div class="col-md-6">
+                <div class="card p-4 border-0 shadow-sm h-100">
+                    <h5 class="fw-bold mb-3">Student Details</h5>
+                    <form method="POST" action="{{ url_for('register_view') }}" id="reg-form">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Student ID <span class="text-danger">*</span></label>
+                            <input type="text" name="student_id" class="form-control" placeholder="e.g. 2305" required pattern="^[A-Za-z0-9_]+$">
+                            <div class="form-text">Alphanumeric characters and underscores only.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. John Doe" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Roll Number <span class="text-danger">*</span></label>
+                            <input type="text" name="roll_no" class="form-control" placeholder="e.g. 42" required>
+                        </div>
+
+                        <div class="row g-2 mb-4">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Class <span class="text-danger">*</span></label>
+                                <input type="text" name="class" class="form-control" placeholder="e.g. TE E&TC" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Division <span class="text-danger">*</span></label>
+                                <input type="text" name="division" class="form-control" placeholder="e.g. A" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2" id="submit-btn">
+                            <i class="bi bi-camera-fill"></i>
+                            <span>Capture Photos & Register</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right: Camera Preview & Instructions -->
+            <div class="col-md-6">
+                <div class="card p-4 border-0 shadow-sm h-100">
+                    <h5 class="fw-bold mb-3">Camera Preview</h5>
+                    <div class="video-container mb-3" style="min-height: 240px;">
+                        <img src="{{ url_for('video_feed') }}" alt="Webcam Preview" style="max-height: 260px;">
+                    </div>
+                    <div class="alert alert-info py-2 px-3 small mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Instructions:</strong>
+                        <ul class="mb-0 ps-3 mt-1">
+                            <li>Position face clearly within the camera frame.</li>
+                            <li>Ensure good lighting without harsh glare.</li>
+                            <li>When you click Register, photos will be captured automatically.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

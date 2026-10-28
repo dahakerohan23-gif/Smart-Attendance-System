@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Live Dashboard - Smart Attendance System{% endblock %}
+
+{% block content %}
+<!-- Top Header Banner -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card p-4 bg-white border-0 shadow-sm">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                        <i class="bi bi-camera-video text-primary"></i>
+                        <span>Live Attendance Monitoring</span>
+                    </h3>
+                    <p class="text-muted mb-0">
+                        Lecture: <strong class="text-dark">{{ lecture.lecture_name }}</strong> | 
+                        Start Time: <strong class="text-dark">{{ lecture.start_time }}</strong> | 
+                        Window: <span class="badge bg-light text-dark border">{{ win_start }} – {{ win_end }}</span>
+                    </p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="window-status-badge" class="badge fs-6 px-3 py-2 
+                        {% if lecture_status == 'Present' %}badge-present
+                        {% elif lecture_status == 'NotStarted' %}badge-waiting
+                        {% else %}badge-closed{% endif %}">
+                        {% if lecture_status == 'Present' %}
+                            <i class="bi bi-check-circle me-1"></i> MONITORING ACTIVE
+                        {% elif lecture_status == 'NotStarted' %}
+                            <i class="bi bi-clock me-1"></i> WAITING TO START (Opens {{ win_start }})
+                        {% else %}
+                            <i class="bi bi-x-circle me-1"></i> MONITORING CLOSED
+                        {% endif %}
+                    </span>
+                    <a href="{{ url_for('settings_view') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil-square"></i> Change Lecture
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-3 stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Registered Students</span>
+                    <h2 class="fw-bold mb-0 mt-1" id="stat-total">{{ total_students }}</h2>
+                </div>
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-3 stat-card success">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Present Today</span>
+                    <h2 class="fw-bold mb-0 mt-1 text-success" id="stat-present">{{ present_count }}</h2>
+                </div>
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-3 stat-card warning">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Absent Today</span>
+                    <h2 class="fw-bold mb-0 mt-1 text-warning" id="stat-absent">{{ absent_count }}</h2>
+                </div>
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-person-x-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-3 stat-card info">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Today's Attendance</span>
+                    <h2 class="fw-bold mb-0 mt-1 text-info" id="stat-pct">{{ attendance_pct }}%</h2>
+                </div>
+                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-pie-chart-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Section: Video Feed & Real-Time Attendance Log -->
+<div class="row g-4">
+    <!-- Left: Live Video Stream -->
+    <div class="col-lg-7 col-xl-8">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                    <span class="pulse-dot"></span>
+                    <span>Live Camera Feed</span>
+                </h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="reloadStream()" title="Reload Video Feed">
+                        <i class="bi bi-arrow-clockwise"></i> Reload
+                    </button>
+                    <a href="{{ url_for('settings_view') }}" class="btn btn-sm btn-outline-primary" title="Switch Camera">
+                        <i class="bi bi-camera"></i> Camera Settings
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-3">
+                <div class="video-container">
+                    <img id="webcam-stream" src="{{ url_for('video_feed') }}" alt="Live Webcam Feed" onerror="handleStreamError()">
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2 px-1 text-muted small">
+                    <span><i class="bi bi-shield-check text-success me-1"></i> AI Facial Recognition Active</span>
+                    <span>Recognized faces are automatically recorded in Excel</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Today's Live Attendance Table -->
+    <div class="col-lg-5 col-xl-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-card-checklist text-primary"></i>
+                    <span>Marked Today</span>
+                </h5>
+                <span class="badge bg-primary rounded-pill px-3 py-2" id="badge-marked-count">{{ present_count }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th class="ps-3">Student</th>
+                                <th>Roll</th>
+                                <th>Time</th>
+                                <th class="text-end pe-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-tbody">
+                            {% if today_records %}
+                                {% for r in today_records %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="fw-semibold">{{ r.name }}</div>
+                                        <small class="text-muted">ID: {{ r.student_id }}</small>
+                                    </td>
+                                    <td>{{ r.roll_no }}</td>
+                                    <td><small class="badge bg-light text-dark border">{{ r.time }}</small></td>
+                                    <td class="text-end pe-3">
+                                        <span class="badge badge-present px-2 py-1">{{ r.status }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr id="no-records-row">
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        <i class="bi bi-camera fs-1 d-block mb-2 text-secondary"></i>
+                                        <div>No attendance marked yet today.</div>
+                                        <small>Look into the camera to mark attendance.</small>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 text-center py-3">
+                <a href="{{ url_for('attendance_view') }}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-clock-history me-1"></i> View Full Attendance History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function reloadStream() {
+        const stream = document.getElementById('webcam-stream');
+        stream.src = "{{ url_for('video_feed') }}?t=" + new Date().getTime();
+    }
+
+    function handleStreamError() {
+        const container = document.querySelector('.video-container');
+        container.innerHTML = `
+            <div class="text-center p-4 text-white">
+                <i class="bi bi-camera-video-off fs-1 text-danger d-block mb-2"></i>
+                <h5>Webcam Stream Reconnecting...</h5>
+                <p class="text-muted small">Please ensure your webcam is connected and not in use by another app.</p>
+                <button class="btn btn-outline-light btn-sm mt-2" onclick="reloadStream()">
+                    <i class="bi bi-arrow-clockwise"></i> Retry Stream
+                </button>
+            </div>
+        `;
+    }
+
+    // Live polling for marked attendance every 3 seconds
+    let lastRecordCount = {{ present_count }};
+    function updateTodayAttendance() {
+        fetch('/api/today')
+            .then(res => res.json())
+            .then(data => {
+                if (!data || !data.records) return;
+
+                // Update stat cards
+                if (data.stats) {
+                    document.getElementById('stat-total').innerText = data.stats.total;
+                    document.getElementById('stat-present').innerText = data.stats.present;
+                    document.getElementById('stat-absent').innerText = data.stats.absent;
+                    document.getElementById('stat-pct').innerText = data.stats.pct + '%';
+                    document.getElementById('badge-marked-count').innerText = data.stats.present;
+                }
+
+                // Update table if new records arrived
+                const tbody = document.getElementById('attendance-tbody');
+                if (data.records.length > 0) {
+                    let html = '';
+                    data.records.forEach(r => {
+                        html += `
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="fw-semibold">${r.name}</div>
+                                    <small class="text-muted">ID: ${r.student_id}</small>
+                                </td>
+                                <td>${r.roll_no}</td>
+                                <td><small class="badge bg-light text-dark border">${r.time}</small></td>
+                                <td class="text-end pe-3">
+                                    <span class="badge badge-present px-2 py-1">${r.status}</span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                }
+            })
+            .catch(err => console.debug('Polling error:', err));
+    }
+
+    setInterval(updateTodayAttendance, 3000);
+</script>
+{% endblock %}
+

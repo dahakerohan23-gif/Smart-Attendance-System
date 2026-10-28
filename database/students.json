@@ -1,0 +1,30 @@
+{
+  "2304": {
+    "student_id": "2304",
+    "name": "Rohan Dahake",
+    "roll_no": "13",
+    "class": "TE",
+    "division": "A"
+  },
+  "2121": {
+    "student_id": "2121",
+    "name": "Akshata Ghade",
+    "roll_no": "21",
+    "class": "TE",
+    "division": "A"
+  },
+  "5151": {
+    "student_id": "5151",
+    "name": "Harshada Chavam",
+    "roll_no": "65",
+    "class": "TE ENtc",
+    "division": "A"
+  },
+  "3131": {
+    "student_id": "3131",
+    "name": "Kundan Rajpurohit",
+    "roll_no": "73",
+    "class": "te",
+    "division": "a"
+  }
+}

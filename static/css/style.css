@@ -1,0 +1,5 @@
+/* Smart Attendance custom styling */
+.badge-present { background-color: #10b981; color: #fff; }
+.badge-closed { background-color: #ef4444; color: #fff; }
+.badge-waiting { background-color: #f59e0b; color: #fff; }
+
