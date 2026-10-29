@@ -522,6 +522,24 @@ def download_excel():
     return send_file(EXCEL_FILE, as_attachment=True, download_name="attendance.xlsx")
 
 
+@app.route("/download_csv")
+def download_csv():
+    csv_file = os.path.join("reports", "attendance.csv")
+    try:
+        df = read_attendance()
+        if not df.empty:
+            os.makedirs("reports", exist_ok=True)
+            df.to_csv(csv_file, index=False, encoding="utf-8")
+    except Exception as e:
+        print(f"Error generating CSV: {e}")
+
+    if not os.path.exists(csv_file):
+        flash("No attendance records exist to export.", "warning")
+        return redirect(url_for("attendance_view"))
+
+    return send_file(csv_file, as_attachment=True, download_name="attendance.csv", mimetype="text/csv")
+
+
 @app.route("/api/today")
 def api_today():
     today_records = get_today_attendance_records()
