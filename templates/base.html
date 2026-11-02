@@ -155,8 +155,11 @@
                         <span class="pulse-dot"></span>
                         <span id="nav-camera-desc">Webcam Active</span>
                     </span>
-                    <a href="{{ url_for('download_csv') }}" class="btn btn-outline-info btn-sm d-flex align-items-center gap-1">
-                        <i class="bi bi-filetype-csv"></i> Export CSV
+                    <a href="{{ url_for('download_last_session_csv') }}" class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1" title="Download only the most recent lecture session">
+                        <i class="bi bi-clock-history"></i> Last Session CSV
+                    </a>
+                    <a href="{{ url_for('download_csv') }}" class="btn btn-outline-info btn-sm d-flex align-items-center gap-1" title="Download all attendance records">
+                        <i class="bi bi-filetype-csv"></i> All CSV
                     </a>
                     <a href="{{ url_for('download_excel') }}" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1">
                         <i class="bi bi-file-earmark-excel"></i> Export Excel

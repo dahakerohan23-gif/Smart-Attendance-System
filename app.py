@@ -524,20 +524,38 @@ def download_excel():
 
 @app.route("/download_csv")
 def download_csv():
+    """Download the ENTIRE attendance CSV."""
+    from generate_csv import export_attendance_to_csv
+    export_attendance_to_csv()
     csv_file = os.path.join("reports", "attendance.csv")
-    try:
-        df = read_attendance()
-        if not df.empty:
-            os.makedirs("reports", exist_ok=True)
-            df.to_csv(csv_file, index=False, encoding="utf-8")
-    except Exception as e:
-        print(f"Error generating CSV: {e}")
-
     if not os.path.exists(csv_file):
         flash("No attendance records exist to export.", "warning")
         return redirect(url_for("attendance_view"))
+    return send_file(csv_file, as_attachment=True, download_name="entire_attendance.csv", mimetype="text/csv")
 
-    return send_file(csv_file, as_attachment=True, download_name="attendance.csv", mimetype="text/csv")
+
+@app.route("/download_last_session_csv")
+def download_last_session_csv():
+    """Download ONLY the LAST lecture session CSV."""
+    from generate_csv import export_attendance_to_csv
+    export_attendance_to_csv()
+    csv_file = os.path.join("reports", "last_session_attendance.csv")
+    if not os.path.exists(csv_file):
+        flash("No session attendance records exist yet.", "warning")
+        return redirect(url_for("attendance_view"))
+    return send_file(csv_file, as_attachment=True, download_name="last_session_attendance.csv", mimetype="text/csv")
+
+
+@app.route("/download_today_csv")
+def download_today_csv():
+    """Download TODAY's attendance CSV."""
+    from generate_csv import export_attendance_to_csv
+    export_attendance_to_csv()
+    csv_file = os.path.join("reports", "today_attendance.csv")
+    if not os.path.exists(csv_file):
+        flash("No attendance recorded for today yet.", "warning")
+        return redirect(url_for("attendance_view"))
+    return send_file(csv_file, as_attachment=True, download_name="today_attendance.csv", mimetype="text/csv")
 
 
 @app.route("/api/today")
